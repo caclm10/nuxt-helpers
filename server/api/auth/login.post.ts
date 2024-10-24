@@ -9,11 +9,11 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-    const result = await validateBody(event, schema)
+    const validated = await validateBody(event, schema)
 
-    const users = await $db.select().from(User).where(eq(User.email, result.data.email))
+    const users = await $db.select().from(User).where(eq(User.email, validated.email))
 
-    if (users.length === 0 || await hashCheck(result.data.password, users[0].password)) {
+    if (users.length === 0 || await hashCheck(validated.password, users[0].password)) {
         throw new ValidationError({
             email: ["Theses credentials do not match our record."]
         });
