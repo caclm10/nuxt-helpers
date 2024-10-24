@@ -67,5 +67,5 @@ export async function validateBody<E extends EventHandlerRequest, S extends z.Zo
         throw new ZodValidationError(result.error)
     }
 
-    return result as z.SafeParseSuccess<z.infer<S>>;
+    return result.data as z.infer<S>;
 }
