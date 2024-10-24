@@ -9,12 +9,12 @@ const schema = z.object({
 })
 
 export default defineRequestHandler(async (event) => {
-    const result = await validateBody(event, schema)
+    const validated = await validateBody(event, schema)
 
     const users = await $db.insert(User).values({
-        name: result.data.name,
-        email: result.data.email,
-        password: await hash(result.data.password)
+        name: validated.name,
+        email: validated.email,
+        password: await hash(validated.password)
     }).returning()
 
     const { accessToken, refreshToken } = await login(users[0])
