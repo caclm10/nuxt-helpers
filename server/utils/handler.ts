@@ -1,4 +1,5 @@
-import type { EventHandler, EventHandlerRequest } from "h3";
+import type { EventHandler, EventHandlerRequest, H3Event } from "h3";
+import { z } from "zod";
 
 export const defineRequestHandler = <T extends EventHandlerRequest, D>(
     handler: EventHandler<T, D>
@@ -54,4 +55,17 @@ export function errorResponse(
         message: message || "Unknown error occured.",
         errors
     }
+}
+
+export async function validateBody<E extends EventHandlerRequest, S extends z.ZodTypeAny>(
+    event: H3Event<E>,
+    schema: S
+) {
+    const result = await readValidatedBody(event, schema.safeParse);
+
+    if (!result.success) {
+        throw new ZodValidationError(result.error)
+    }
+
+    return result as z.SafeParseSuccess<z.infer<S>>;
 }
