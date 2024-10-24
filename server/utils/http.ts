@@ -23,12 +23,15 @@ export class HttpError extends Error {
 export class ValidationError extends Error {
     errors: Partial<Record<PropertyKey, string[]>>
 
+    constructor(errors: Partial<Record<PropertyKey, string[]>>) {
+        super(errors[Object.keys(errors)[0]]?.[0])
+        this.errors = errors;
+    }
+}
+
+export class ZodValidationError extends ValidationError {
     constructor(data: z.ZodError) {
         const messages = data.flatten().fieldErrors
-        const firstField = Object.keys(messages)[0]
-
-        super(messages[firstField]?.[0])
-
-        this.errors = messages;
+        super(messages)
     }
 }
