@@ -6,7 +6,7 @@ export const User = table(
     "users",
     {
         id: t.int().primaryKey({ autoIncrement: true }),
-        name: t.text(),
+        name: t.text().notNull(),
         email: t.text().notNull().unique(),
         password: t.text().notNull(),
         createdAt: t.text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
@@ -18,7 +18,7 @@ export const UserSession = table(
     "user_sessions",
     {
         id: t.int().primaryKey({ autoIncrement: true }),
-        userId: t.int("user_id").references(() => User.id),
+        userId: t.int("user_id").notNull().references(() => User.id),
         refreshToken: t.text().notNull().unique(),
         createdAt: t.text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
         updatedAt: t.text("updated_at").default(sql`(CURRENT_TIMESTAMP)`).$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
