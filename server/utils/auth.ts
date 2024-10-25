@@ -13,7 +13,7 @@ const REFRESH_TOKEN_BYTE_SIZE = 32;
 const ACCESS_TOKEN_ALGORITHM = "HS256";
 const ACCESS_TOKEN_SECRET_KEY = crypto.createSecretKey("supersecretkeyyoushouldnotcommittogithub", "utf-8");
 const ACCESS_TOKEN_ISSUER = "http://localhost:3000";
-const ACCESS_TOKEN_EXPIRATION_TIME = "10 s";
+const ACCESS_TOKEN_EXPIRATION_TIME = "5 m";
 
 const HASH_KEY_LENGTH = 32;
 
@@ -40,10 +40,10 @@ export function generateOpaqueToken() {
     return token;
 }
 
-export async function generateAccessToken(email: string, { audience = "" } = {}) {
-    return await new jose.SignJWT({ email }) // details to  encode in the token
+export async function generateAccessToken(_nanoid: string, { audience = "" } = {}) {
+    return await new jose.SignJWT() // details to  encode in the token
         .setProtectedHeader({ alg: ACCESS_TOKEN_ALGORITHM })
-        .setSubject(email)
+        .setSubject(_nanoid)
         .setIssuedAt()
         .setIssuer(ACCESS_TOKEN_ISSUER) // issuer
         .setAudience(audience) // audience
@@ -64,7 +64,7 @@ export async function login(
 ) {
     const refreshToken = generateOpaqueToken();
 
-    const accessToken = await generateAccessToken(user.email, options)
+    const accessToken = await generateAccessToken(user.nanoid, options)
 
     // Insert refresh token to database (session table)
     await $db.insert(UserSession).values({
@@ -133,4 +133,14 @@ export async function getAccessTokenPayload<E extends EventHandlerRequest>(event
     throw new HttpError("Invalid access token.", {
         statusCode: 401
     })
+}
+
+export function getRefreshToken<E extends EventHandlerRequest>(event: H3Event<E>) {
+    const encryptedToken = getCookie(event, "x-refresh-token")
+    const token = encryptedToken ? encrypter().decrypt(encryptedToken) : undefined;
+
+    return {
+        refreshToken: token,
+        encrpytedRefreshToken: encryptedToken
+    }
 }
