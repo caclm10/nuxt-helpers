@@ -20,7 +20,9 @@ export const defineRequestHandler = <T extends EventHandlerRequest, D>(
 
             if (err instanceof HttpError) {
                 setResponseStatus(event, err.statusCode)
-                return errorResponse(err.message)
+                return errorResponse(err.message, {
+                    code: err.code
+                })
             }
 
             if (err instanceof Error) {
