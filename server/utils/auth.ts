@@ -6,14 +6,14 @@ import type { EventHandlerRequest, H3Event } from "h3";
 import { User, UserSession } from "~/server/db/schema";
 
 const ENCRYPT_ALGORITHM = "aes-256-cbc";
-const ENCRYPT_KEY = crypto.randomBytes(32);
-const ENCRYPT_IV = crypto.randomBytes(16);
+const ENCRYPT_KEY = Buffer.from("a6b0937437f823d1db6bf94714d13ea3b0ec09a6df46e8153b5673633fa92932", "hex");
+const ENCRYPT_IV = Buffer.from("b93739bfb7df4166d25650d127dcf11a", "hex");
 
 const REFRESH_TOKEN_BYTE_SIZE = 32;
 const ACCESS_TOKEN_ALGORITHM = "HS256";
 const ACCESS_TOKEN_SECRET_KEY = crypto.createSecretKey("supersecretkeyyoushouldnotcommittogithub", "utf-8");
 const ACCESS_TOKEN_ISSUER = "http://localhost:3000";
-const ACCESS_TOKEN_EXPIRATION_TIME = "10 m";
+const ACCESS_TOKEN_EXPIRATION_TIME = "10 s";
 
 const HASH_KEY_LENGTH = 32;
 
@@ -64,7 +64,7 @@ export async function login(
 ) {
     const refreshToken = generateOpaqueToken();
 
-    const accessToken = generateAccessToken(user.email, options)
+    const accessToken = await generateAccessToken(user.email, options)
 
     // Insert refresh token to database (session table)
     await $db.insert(UserSession).values({
