@@ -1,6 +1,7 @@
 import type { RegisterResponseData } from "~/types/response";
 
 export default defineNuxtPlugin((nuxtApp) => {
+    const { isProtectedRoute } = useAppRoute();
     const accessToken = useSessionStorage("access-token", "");
 
     const _authFetch = $fetch.create({
@@ -16,10 +17,16 @@ export default defineNuxtPlugin((nuxtApp) => {
                     const res = await $fetch<HttpResponse<RegisterResponseData>>("/api/auth/refresh-token");
                     accessToken.value = res.data!.accessToken;
                 } catch (error) {
-                    await nuxtApp.runWithContext(() => navigateTo("/login"));
+                    if (isProtectedRoute.value) {
+                        await nuxtApp.runWithContext(() => navigateTo("/login"));
+                    }
+
+                    throw error;
                 }
             } else {
-                await nuxtApp.runWithContext(() => navigateTo("/login"));
+                if (isProtectedRoute.value) {
+                    await nuxtApp.runWithContext(() => navigateTo("/login"));
+                }
             }
         }
     })
@@ -31,6 +38,8 @@ export default defineNuxtPlugin((nuxtApp) => {
         } catch (error) {
             if (isHttpError(error) && error.data.code === responseCode.JWT_EXPIRED) {
                 return await authFetch(request, options);
+            } else {
+                throw error;
             }
         }
     }
