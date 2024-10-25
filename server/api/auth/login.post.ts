@@ -8,7 +8,7 @@ const schema = z.object({
     password: $zString("password").required().min(6).max(20).done()
 })
 
-export default defineEventHandler(async (event) => {
+export default defineRequestHandler(async (event) => {
     const validated = await validateBody(event, schema)
 
     const users = await $db.select().from(User).where(eq(User.email, validated.email))
