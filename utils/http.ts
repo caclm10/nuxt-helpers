@@ -1,7 +1,14 @@
 import { FetchError } from "ofetch";
 import { type Form } from "#ui/types";
 
+export const responseCode = {
+    DEFAULT_RESPONSE: 0,
+    JWT_EXPIRED: 1,
+    INVALID_REFRESH_TOKEN: 2
+}
+
 export interface HttpResponse<D = any> {
+    code: number;
     success: boolean;
     message: string;
     data?: D;
@@ -11,6 +18,7 @@ type FieldErrors = Partial<Record<PropertyKey, string[]>>
 
 export interface HttpErrorResponse<E extends FieldErrors> extends Omit<FetchError, "data"> {
     data: {
+        code: number;
         success: boolean;
         message: string;
         errors: E;
